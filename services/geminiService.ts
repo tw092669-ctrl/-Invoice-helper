@@ -20,6 +20,7 @@ export const extractInvoiceData = async (
       throw new Error("未設定 API Key。請至設定選單輸入您的 Gemini API Key。");
     }
 
+    console.log("🔑 API Key found, initializing Gemini...");
     const ai = new GoogleGenAI({ apiKey: apiKey });
     
     // Schema for structured output
@@ -46,8 +47,9 @@ export const extractInvoiceData = async (
       required: ["items"]
     };
 
+    console.log("📤 Sending request to Gemini API...");
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
+      model: "gemini-2.0-flash-exp",
       contents: {
         parts: [
           {
@@ -57,7 +59,7 @@ export const extractInvoiceData = async (
             },
           },
           {
-            text: "Extract all invoice data. 1. Line items (name, qty, price, amount). 2. Buyer Name (Title). 3. Date (convert to YYYY-MM-DD). 4. Grand Total. Return strictly JSON.",
+            text: "Extract all invoice data from this image. 1. Line items (name, qty, price, amount). 2. Buyer Name (Title/抬頭). 3. Date (convert ROC year to YYYY-MM-DD). 4. Grand Total. Return JSON only.",
           },
         ],
       },
@@ -67,10 +69,16 @@ export const extractInvoiceData = async (
       },
     });
 
+    console.log("✅ Response received from Gemini API");
     const text = response.text;
-    if (!text) return { items: [], buyerName: '' };
+    if (!text) {
+      console.warn("⚠️ Empty response from Gemini");
+      return { items: [], buyerName: '' };
+    }
 
     const rawData = JSON.parse(text);
+    console.log("📋 Parsed data:", rawData);
+    
     const rawItems = rawData.items || [];
     const buyerName = rawData.buyerName || "";
     const date = rawData.date;
@@ -85,14 +93,34 @@ export const extractInvoiceData = async (
       amount: item.amount || 0
     }));
 
+    console.log(`✅ Extracted ${items.length} items successfully`);
     return { items, buyerName, date, grandTotal };
 
   } catch (error: any) {
-    console.error("Gemini Extraction Error:", error);
-    // Pass the specific error message if it's about the API key
-    if (error.message.includes("API Key")) {
-        throw error;
+    console.error("❌ Gemini Extraction Error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      status: error.status,
+      statusText: error.statusText
+    });
+    
+    // Provide specific error messages
+    if (error.message.includes("API Key") || error.message.includes("API key")) {
+      throw new Error("API Key 無效或未設定。請到設定中輸入正確的 Gemini API Key。");
     }
-    throw new Error("無法辨識發票內容，請重試或手動輸入。");
+    
+    if (error.status === 404 || error.message.includes("not found")) {
+      throw new Error("模型不存在。請確認您的 API Key 有權限使用 Gemini API。");
+    }
+    
+    if (error.status === 429 || error.message.includes("quota") || error.message.includes("limit")) {
+      throw new Error("API 配額已用完。請稍後再試或升級您的 API 方案。");
+    }
+    
+    if (error.message.includes("network") || error.message.includes("fetch")) {
+      throw new Error("網路連線失敗。請檢查您的網路連線。");
+    }
+    
+    throw new Error(`辨識失敗：${error.message || "未知錯誤"}。請重試或手動輸入。`);
   }
 };
