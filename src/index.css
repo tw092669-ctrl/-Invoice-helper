@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-cream: #f4f1ea;
+  --card-white: #fffdf5;
+  --retro-orange: #e76f51;
+  --retro-green: #2a9d8f;
+  --retro-yellow: #e9c46a;
+  --retro-dark: #264653;
+  --retro-brown: #5c4d3c;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--bg-cream);
+  color: var(--retro-dark);
+}
+
+/* Invoice specific font */
+.invoice-font {
+  font-family: var(--font-family-serif);
+}
+
+/* Hide number input spinners */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4c5b0;
+  border-radius: 4px;
+}
