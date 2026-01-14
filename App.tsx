@@ -131,27 +131,24 @@ const App: React.FC = () => {
 
   // Logic: Archive
   const processArchive = async (base64String: string) => {
+    // 存檔模式：僅保存照片，不使用 API
     setIsProcessing(true);
-    setProcessingMsg('建檔中...');
+    setProcessingMsg('儲存中...');
     try {
-        const { items: extractedItems, buyerName: extractedBuyer, date, grandTotal } = await extractInvoiceData(base64String);
         const today = new Date();
-        const dateStr = date || today.toISOString().split('T')[0];
-        const finalTotal = grandTotal || 0;
-        const calculatedTax = Math.ceil(finalTotal - (finalTotal / (1 + taxRate/100)));
-        const calculatedSubtotal = finalTotal - calculatedTax;
+        const dateStr = today.toISOString().split('T')[0];
 
         const newRecord: InvoiceRecord = {
             id: crypto.randomUUID(),
             timestamp: Date.now(),
             dateStr,
-            items: extractedItems, 
-            subtotal: calculatedSubtotal,
-            tax: calculatedTax,
-            grandTotal: finalTotal,
+            items: [], // 空白項目，需手動輸入
+            subtotal: 0,
+            tax: 0,
+            grandTotal: 0,
             photoBase64: base64String,
-            buyerName: extractedBuyer,
-            invoiceType: (extractedBuyer && extractedBuyer.length > 0) ? 'triplicate' : 'duplicate'
+            buyerName: '',
+            invoiceType: 'duplicate'
         };
 
         setRecords(prev => [newRecord, ...prev]);
@@ -163,9 +160,10 @@ const App: React.FC = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        alert("已建檔並下載圖片！");
+        
+        alert("✅ 照片已保存！\n\n可至「歷史記錄」查看照片並手動輸入資料。");
     } catch (e: any) {
-        alert("辨識失敗：" + e.message);
+        alert("保存失敗：" + e.message);
     } finally {
         setIsProcessing(false);
         setProcessingMsg('');
