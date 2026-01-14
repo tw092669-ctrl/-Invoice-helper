@@ -1,0 +1,7 @@
+{
+  "name": "發票稅務快算",
+  "description": "快速試算三聯式發票稅金，支援拍照自動辨識品項與金額，自動轉換中文大寫金額。",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
