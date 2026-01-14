@@ -102,7 +102,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#264653] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[#264653] flex flex-col landscape:flex-row">
       {/* Hidden inputs */}
       <canvas ref={canvasRef} className="hidden" />
       <input 
@@ -114,9 +114,9 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       />
 
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 p-4 z-10 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
-        <span className="text-[#fffdf5] font-black text-xl tracking-wider drop-shadow-md font-sans">
-            {mode === 'identify' ? '掃描導入 (Import)' : '掃描存檔 (Archive)'}
+      <div className="absolute top-0 left-0 right-0 p-4 z-10 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent landscape:flex-col landscape:left-0 landscape:top-0 landscape:bottom-0 landscape:right-auto landscape:w-auto landscape:bg-gradient-to-r landscape:from-black/50 landscape:to-transparent">
+        <span className="text-[#fffdf5] font-black text-xl tracking-wider drop-shadow-md font-sans landscape:rotate-0 landscape:text-base landscape:writing-mode-vertical landscape:[writing-mode:vertical-lr] landscape:py-6">
+            {mode === 'identify' ? '掃描導入' : '掃描存檔'}
         </span>
         <button 
             onClick={onClose}
@@ -148,9 +148,9 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
                     className="absolute inset-0 w-full h-full object-cover opacity-90"
                 />
                 
-                {/* Guide Frame - Retro Style */}
+                {/* Guide Frame - Landscape Optimized */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-[85%] aspect-[3/4] border-4 border-[#fffdf5]/60 rounded-[2rem] relative shadow-[0_0_0_9999px_rgba(38,70,83,0.6)]">
+                    <div className="w-[85%] aspect-[3/4] landscape:w-[70%] landscape:aspect-[4/3] border-4 border-[#fffdf5]/60 rounded-[2rem] relative shadow-[0_0_0_9999px_rgba(38,70,83,0.6)]">
                         {/* Corners */}
                         <div className="absolute top-0 left-0 w-12 h-12 border-t-8 border-l-8 border-[#e9c46a] rounded-tl-[1.5rem] -mt-[4px] -ml-[4px]"></div>
                         <div className="absolute top-0 right-0 w-12 h-12 border-t-8 border-r-8 border-[#e9c46a] rounded-tr-[1.5rem] -mt-[4px] -mr-[4px]"></div>
@@ -167,7 +167,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       </div>
 
       {/* Controls */}
-      <div className="bg-[#264653] p-6 pb-12 flex justify-around items-center relative z-10 rounded-t-[2rem]">
+      <div className="bg-[#264653] p-6 pb-12 flex justify-around items-center relative z-10 rounded-t-[2rem] landscape:rounded-none landscape:rounded-l-[2rem] landscape:flex-col landscape:px-4 landscape:py-6 landscape:pb-6 landscape:w-28">
         <button 
             onClick={() => fileInputRef.current?.click()}
             className="p-4 rounded-2xl bg-[#1a313a] text-[#fffdf5] border-2 border-[#5c4d3c] active:scale-95 transition-transform"
@@ -179,7 +179,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
         <button 
             onClick={handleCapture}
             disabled={permissionError}
-            className="w-24 h-24 rounded-full border-8 border-[#f4f1ea]/20 flex items-center justify-center bg-[#e76f51] shadow-[0_6px_0_0_#c75135] active:shadow-none active:translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-24 h-24 rounded-full border-8 border-[#f4f1ea]/20 flex items-center justify-center bg-[#e76f51] shadow-[0_6px_0_0_#c75135] active:shadow-none active:translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed landscape:my-4"
         >
             <Camera size={40} className="text-white" />
         </button>
