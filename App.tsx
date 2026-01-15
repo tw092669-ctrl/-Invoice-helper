@@ -68,8 +68,10 @@ const App: React.FC = () => {
   // Calculations
   const calculateItemBreakdown = (amountStr: string | number) => {
     const total = Number(amountStr) || 0;
-    const tax = Math.ceil(total * (taxRate / 100));
-    const net = total - tax;
+    // 小計 ÷ 1.05 = 未稅（四捨五入）
+    const net = Math.round(total / 1.05);
+    // 未稅 × 0.05 = 稅金
+    const tax = Math.round(net * 0.05);
     return { total, net, tax };
   };
 
