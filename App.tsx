@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Settings, Calculator, Trash2, Plus, Loader2, History, Search, Download, Sparkles } from 'lucide-react';
+import { Settings, Calculator, Trash2, Plus, History, Search } from 'lucide-react';
 import { InvoiceItem, InvoiceRecord } from './types';
 import { getChineseAmountParts } from './utils/numberToChinese';
-import { extractInvoiceData } from './services/geminiService';
 import { SettingsModal } from './components/SettingsModal';
 import { HistoryModal } from './components/HistoryModal';
-import { CameraScanner } from './components/CameraScanner';
 
 const App: React.FC = () => {
   // State
@@ -19,12 +17,6 @@ const App: React.FC = () => {
   const [buyerName, setBuyerName] = useState<string>('');
   const [taxRate, setTaxRate] = useState<number>(5);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingMsg, setProcessingMsg] = useState('');
-  
-  // Camera Scanner State
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [scannerMode, setScannerMode] = useState<'identify' | 'archive'>('identify');
   
   // History State
   const [records, setRecords] = useState<InvoiceRecord[]>([]);
@@ -108,80 +100,6 @@ const App: React.FC = () => {
     setItems(prev => prev.filter(item => item.id !== id));
   };
 
-  // Logic: Identify
-  const processIdentify = async (base64String: string) => {
-    setIsProcessing(true);
-    setProcessingMsg('正在識別品項...');
-    try {
-        const { items: extractedItems, buyerName: extractedBuyer } = await extractInvoiceData(base64String);
-        if (extractedBuyer) setBuyerName(extractedBuyer);
-        if (extractedItems.length > 0) {
-            while(extractedItems.length < 4) {
-                extractedItems.push({ id: crypto.randomUUID(), name: '', quantity: '', unitPrice: '', amount: '' });
-            }
-            setItems(extractedItems);
-        } else {
-            alert("未能辨識出品項，請手動輸入。");
-        }
-    } catch (e: any) {
-        alert(e.message || "發生錯誤");
-    } finally {
-        setIsProcessing(false);
-        setProcessingMsg('');
-    }
-  };
-
-  // Logic: Archive
-  const processArchive = async (base64String: string) => {
-    // 存檔模式：僅保存照片，不使用 API
-    setIsProcessing(true);
-    setProcessingMsg('儲存中...');
-    try {
-        const today = new Date();
-        const dateStr = today.toISOString().split('T')[0];
-
-        const newRecord: InvoiceRecord = {
-            id: crypto.randomUUID(),
-            timestamp: Date.now(),
-            dateStr,
-            items: [], // 空白項目，需手動輸入
-            subtotal: 0,
-            tax: 0,
-            grandTotal: 0,
-            photoBase64: base64String,
-            buyerName: '',
-            invoiceType: 'duplicate'
-        };
-
-        setRecords(prev => [newRecord, ...prev]);
-
-        // Download
-        const link = document.createElement('a');
-        link.href = `data:image/jpeg;base64,${base64String}`;
-        link.download = `invoice_${dateStr}_${Date.now()}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        alert("✅ 照片已保存！\n\n可至「歷史記錄」查看照片並手動輸入資料。");
-    } catch (e: any) {
-        alert("保存失敗：" + e.message);
-    } finally {
-        setIsProcessing(false);
-        setProcessingMsg('');
-    }
-  };
-
-  const handleCameraCapture = (base64String: string) => {
-      if (scannerMode === 'identify') processIdentify(base64String);
-      else processArchive(base64String);
-  };
-
-  const openScanner = (mode: 'identify' | 'archive') => {
-      setScannerMode(mode);
-      setIsScannerOpen(true);
-  };
-
   const loadRecord = (record: InvoiceRecord) => {
       const loadedItems = [...record.items];
       while(loadedItems.length < 4) {
@@ -249,43 +167,6 @@ const App: React.FC = () => {
 
       <main className="w-full max-w-3xl px-4 space-y-8">
         
-        {/* Retro Action Cards */}
-        <div className="grid grid-cols-2 gap-4">
-            <button 
-                onClick={() => openScanner('identify')}
-                disabled={isProcessing}
-                className="group relative overflow-hidden bg-[#e76f51] rounded-[2rem] p-4 text-left shadow-[0_6px_0_0_#c75135] active:shadow-none active:translate-y-[6px] transition-all disabled:opacity-70 disabled:cursor-not-allowed h-32 flex flex-col justify-between"
-            >
-                <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform">
-                   <Camera size={64} className="text-white" />
-                </div>
-                <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    {isProcessing ? <Loader2 className="animate-spin text-white" /> : <Sparkles className="text-white" />}
-                </div>
-                <div>
-                    <div className="text-white font-black text-lg">掃描發票</div>
-                    <div className="text-orange-100 text-sm font-medium">導入品項</div>
-                </div>
-            </button>
-            
-            <button 
-                onClick={() => openScanner('archive')}
-                disabled={isProcessing}
-                className="group relative overflow-hidden bg-[#2a9d8f] rounded-[2rem] p-4 text-left shadow-[0_6px_0_0_#1d756a] active:shadow-none active:translate-y-[6px] transition-all disabled:opacity-70 disabled:cursor-not-allowed h-32 flex flex-col justify-between"
-            >
-                <div className="absolute -bottom-2 -right-2 p-4 opacity-20 group-hover:rotate-12 transition-transform">
-                   <Download size={72} className="text-white" />
-                </div>
-                <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <Download className="text-white" />
-                </div>
-                <div>
-                    <div className="text-white font-black text-lg">掃描存檔</div>
-                    <div className="text-emerald-100 text-sm font-medium">辨識 + 下載</div>
-                </div>
-            </button>
-        </div>
-
         {/* Search Bar / File Button */}
         <button 
             onClick={() => setView('history')}
@@ -301,12 +182,6 @@ const App: React.FC = () => {
                 {records.length} items
             </div>
         </button>
-
-        {isProcessing && (
-            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-3 text-center text-[#e76f51] font-bold animate-pulse">
-                {processingMsg}
-            </div>
-        )}
 
         {/* Invoice Paper Section - Keeps strict formal layout but wrapped in retro container */}
         <div className="bg-[#fffdf5] rounded-[1.5rem] shadow-xl border-4 border-[#fff] overflow-hidden relative">
@@ -456,13 +331,6 @@ const App: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         taxRate={taxRate}
         setTaxRate={setTaxRate}
-      />
-
-      <CameraScanner 
-        isOpen={isScannerOpen} 
-        onClose={() => setIsScannerOpen(false)} 
-        onCapture={handleCameraCapture}
-        mode={scannerMode}
       />
     </div>
   );

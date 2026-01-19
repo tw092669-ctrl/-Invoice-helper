@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { X, Key } from 'lucide-react';
+import React from 'react';
+import { X } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -14,18 +14,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   taxRate,
   setTaxRate,
 }) => {
-  const [apiKey, setApiKey] = useState('');
-
-  useEffect(() => {
-    const storedKey = localStorage.getItem('gemini_api_key');
-    if (storedKey) setApiKey(storedKey);
-  }, [isOpen]);
-
-  const handleSaveKey = (val: string) => {
-    setApiKey(val);
-    localStorage.setItem('gemini_api_key', val);
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -59,28 +47,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <p className="text-xs text-[#5c4d3c] mt-2 font-medium">
               台灣一般稅率預設為 5%。
             </p>
-          </div>
-
-          {/* API Key Section */}
-          <div className="bg-[#f4f1ea] p-4 rounded-2xl border-2 border-[#eaddcf]">
-            <label className="block text-sm font-bold text-[#2a9d8f] mb-2 flex items-center gap-2 uppercase tracking-wide">
-              <Key size={16} /> Gemini API Key
-            </label>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => handleSaveKey(e.target.value)}
-              className="w-full bg-white border-2 border-[#d6ccc2] rounded-xl px-3 py-2 text-sm text-[#264653] focus:border-[#2a9d8f] outline-none"
-              placeholder="貼上您的 API Key"
-            />
-            <a 
-              href="https://aistudio.google.com/app/apikey" 
-              target="_blank" 
-              rel="noreferrer"
-              className="text-xs text-[#2a9d8f] font-bold underline mt-2 block text-right"
-            >
-              取得 Google AI Studio Key
-            </a>
           </div>
         </div>
 
